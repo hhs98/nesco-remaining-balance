@@ -1,22 +1,21 @@
 import os
 import time
+
 import requests
+from dotenv import load_dotenv
 from selenium import webdriver
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from dotenv import load_dotenv
+from selenium.webdriver.support.ui import WebDriverWait
 
-
-
-load_dotenv()  
+load_dotenv()
 
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "PUT_YOUR_TOKEN_HERE")
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID", "PUT_YOUR_CHAT_ID_HERE")
 TARGET_URL = os.getenv("TARGET_URL")
 CUST_NUMBER = os.getenv("CUST_NUMBER")
 
-#Precise XPath inside #con_info_div
+# Precise XPath inside #con_info_div
 VALUE_XPATH = '//*[@id="con_info_div"]/div/div/div/form/div[6]/div[2]/input'
 
 
@@ -28,7 +27,7 @@ def make_driver_headless():
     opts.add_argument("--no-sandbox")
     opts.add_argument("--disable-dev-shm-usage")
     opts.add_argument("--disable-gpu")
-    
+
     # If Actions provides CHROME_BIN, use it
     chrome_bin = os.getenv("CHROME_BIN")
     if chrome_bin:
@@ -39,7 +38,11 @@ def make_driver_headless():
 
 
 def send_telegram_message(text: str):
-    if not TELEGRAM_BOT_TOKEN or not TELEGRAM_CHAT_ID or "PUT_YOUR_" in TELEGRAM_BOT_TOKEN:
+    if (
+        not TELEGRAM_BOT_TOKEN
+        or not TELEGRAM_CHAT_ID
+        or "PUT_YOUR_" in TELEGRAM_BOT_TOKEN
+    ):
         print("Telegram credentials missing. Message not sent.")
         return
 
@@ -66,14 +69,18 @@ def main():
         cust_input.send_keys(CUST_NUMBER)
 
         # Click submit
-        submit_btn = wait.until(EC.element_to_be_clickable((By.ID, "recharge_hist_button")))
+        submit_btn = wait.until(
+            EC.element_to_be_clickable((By.ID, "recharge_hist_button"))
+        )
         submit_btn.click()
 
         # Wait for results container
         wait.until(EC.visibility_of_element_located((By.ID, "con_info_div")))
 
         # Extract the specific disabled input value with the full XPath
-        value_input = wait.until(EC.presence_of_element_located((By.XPATH, VALUE_XPATH)))
+        value_input = wait.until(
+            EC.presence_of_element_located((By.XPATH, VALUE_XPATH))
+        )
         raw_value = value_input.get_attribute("value") or ""
         value = raw_value.strip()
 

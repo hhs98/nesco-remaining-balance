@@ -28,8 +28,11 @@ def make_driver_headless():
     opts.add_argument("--no-sandbox")
     opts.add_argument("--disable-dev-shm-usage")
     opts.add_argument("--disable-gpu")
-    # Optional: less detectable
-    opts.add_argument("--disable-blink-features=AutomationControlled")
+    
+    # If Actions provides CHROME_BIN, use it
+    chrome_bin = os.getenv("CHROME_BIN")
+    if chrome_bin:
+        opts.binary_location = chrome_bin
 
     driver = webdriver.Chrome(options=opts)
     return driver

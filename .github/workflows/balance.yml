@@ -1,0 +1,44 @@
+name: Latest Balance Scrape
+
+on:
+  schedule:
+    # Runs daily at 10:30 Asia/Dhaka = 04:30 UTC
+    - cron: "30 4 * * *"
+  workflow_dispatch: {} # allow manual run
+
+jobs:
+  run-scraper:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      # Install a stable Chrome on the runner
+      - name: Install Chrome
+        uses: browser-actions/setup-chrome@v1
+      - name: Show Chrome path
+        id: chrome
+        run: |
+          echo "chrome-path=$(which google-chrome || which chromium || echo '')" >> $GITHUB_OUTPUT
+
+      - name: Install deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run script
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          TARGET_URL: ${{ secrets.TARGET_URL }}
+          CUST_NUMBER: ${{ secrets.CUST_NUMBER }}
+          # Optional: help Selenium/Chrome find the browser in CI
+          CHROME_BIN: ${{ steps.chrome.outputs.chrome-path }}
+        run: |
+          python balance_prod.py
